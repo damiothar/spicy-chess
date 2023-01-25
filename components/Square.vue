@@ -1,48 +1,26 @@
 <template>
   <button 
     class="square"
-    :class="{'--black': isBlack, '--selected': isSelected}"
+    :class="{'--black': square.black, '--selected': square.selected}"
     @click.prevent="click"
   >
-    <div v-if="hasPiece" class="piece" />
-    <div class="square__id">
-      {{ square.id }}
+    {{ square.id }}
+    <div v-if="square.piece" class="piece">
+      {{ square.piece }}
     </div>
   </button>
 </template>
 
 <script setup lang="ts">
-import type { Piece, Square } from '~~/types/Types';
-import type { ComputedRef } from 'vue'
+import type { Square } from '~~/types/Types';
 
 const props = defineProps<{
-  column: number
-  row: number
-  tentativeMove: Array<Square>,
-  piece: Piece
+  square: Square
 }>()
-const square: Square = {
-  id: getId(),
-  column: props.column,
-  row: props.row,
-}
-const isBlack: boolean = (props.column + props.row) % 2 == 0
-const isSelected: ComputedRef<boolean> = computed(() => {
-  return !!props.tentativeMove.find(event => event.id === square.id)
-})
-const hasPiece: ComputedRef<boolean> = computed(() => {
-  return props.piece.square.id === square.id
-})
 
 const emits = defineEmits(['click'])
-function getId(): string {
-  const firstLetterIndex: number = 'a'.charCodeAt(0)
-  const letter: string = String.fromCharCode(firstLetterIndex + props.column).toUpperCase()
-  const number: number = props.row + 1
-  return letter + number
-}
 function click(): void {
-  emits('click', square)
+  emits('click', props.square.id)
 }
 </script>
 
@@ -68,12 +46,6 @@ function click(): void {
       0 0 0 2px var(--background-color) inset,
       0 0 0 4px var(--primary) inset;
   }
-  &__id {
-    position: absolute;
-    top: 50%;
-    left: 50%;
-    transform: translate(-50%, -50%);
-  }
 }
 .piece {
   position: absolute;
@@ -81,8 +53,11 @@ function click(): void {
   left: 50%;
   transform: translate(-50%, -50%);
   width: 70%;
-  height: 70%;
+  aspect-ratio: 1/1;
   border-radius: 50%;
   background-color: var(--accent);
+  color: var(--black);
+  display: grid;
+  place-items: center;
 }
 </style>

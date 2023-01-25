@@ -1,34 +1,25 @@
 <template>
   <div class="app">
     <div class="app__main">
-      <Board :piece="piece" @make-move="makeMove" />
+      <Board :last-move="lastMove" @make-move="makeMove" />
     </div>
     <div class="app__aside">
-      <div v-for="move in moves" :key="move.id" class="move">
-        {{ move }}
+      <div v-for="move in moves" :key="move.index" class="move">
+        {{ move.index + 1 }}. {{ move.from }} > {{ move.to }}
       </div>
     </div>
   </div>
 </template>
 
 <script setup lang="ts">
-import type { Square, Piece, Move } from '~~/types/Types';
-import type { Ref } from 'vue'
+import type { Ref, ComputedRef } from 'vue'
+import type { Move } from '~~/types/Types'
 
-const piece: Ref<Piece> = ref({ square: { column: 0, row: 0, id: 'A1' } })
 const moves: Ref<Array<Move>> = ref([])
+const lastMove: ComputedRef<Move | undefined> = computed(() => moves.value.at(-1))
   
-let count = 0
-function makeMove(squares: Array<Square>): void {
-  const {column, row, id} = squares[1]
-  piece.value.square = {column, row, id}
-  const move: Move = {
-    id: count,
-    from: squares[0],
-    to: squares[1]
-  }
-  moves.value = [...moves.value, move]
-  count++
+function makeMove(move: Move): void {
+  moves.value.push(move)
 }
 </script>
 
@@ -38,7 +29,7 @@ function makeMove(squares: Array<Square>): void {
   --grey: rgb(140, 141, 168);
   --black: rgb(38, 39, 58);
   --primary: rgba(255, 0, 144, 0.8);
-  --accent: rgba(0, 255, 204, 0.8);
+  --accent: rgb(255, 85, 0);
 }
 body {
   font-family: sans-serif;
@@ -58,6 +49,7 @@ body {
     grid-area: aside;
     background-color: var(--white);
     padding: 50px 20px;
+    overflow-y: auto;
   }
 }
 

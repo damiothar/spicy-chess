@@ -2,12 +2,13 @@ export type Square = {
   id: string,
   column: number,
   row: number,
+  black: boolean,
+  selected: boolean,
+  piece: 'pawn' | 'rook' | 'knight' | 'bishop' | 'queen' | 'king' | null,
 }
-export type Piece = {
-  square: Square
-}
+
 export type Move = {
-  id: number,
-  from: Square,
-  to: Square
+  index: number,
+  from: string,
+  to: string,
 }

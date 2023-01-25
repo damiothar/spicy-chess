@@ -2,45 +2,97 @@
   <div class="board">
     <div v-for="row in rows" :key="`row-${row}`" class="board__row">
       <Square
-        v-for="column in columns" :key="`square-${column}-${row}`"
-        ref="squares"
-        :column="column" :row="row"
-        :tentative-move="tentativeMove"
-        :piece="piece"
-        @click="startMove"
+        v-for="square in getSquaresFromRow(row)" :key="`square-${square.id}`"
+        :square="square"
+        @click="clickSquare"
       />
     </div>
   </div>
 </template>
 
 <script setup lang="ts">
-import type { Square, Piece } from '~~/types/Types';
-import type { Ref, ComputedRef } from 'vue'
+import type { Ref } from 'vue'
+import type { Square, Move } from '~~/types/Types'
+import { isEven } from '~/helpers/Helpers'
+
 const props = defineProps<{
-  piece: Piece
+  lastMove: Move | undefined
 }>()
-const columns: Array<number> = getArray(8)
+
 const rows: Array<number> = getArray(8)
-const tentativeMove: Ref<Array<Square>> = ref([])
-const step: ComputedRef<number> = computed(() => tentativeMove.value.length)
+const columns: Array<number> = getArray(8)
+const squares: Ref<Array<Square>> = ref([])
+let squareFrom: Square | null = null
+let squareTo: Square | null = null
+generateSquares()
 
 const emits = defineEmits(['make-move'])
 function getArray(lenght: number): Array<number> {
   return [...Array(lenght).keys()]
 }
-function resetClick(): void {
-  tentativeMove.value = []
+function generateSquares(): void {
+  rows.forEach(row => {
+    columns.forEach(column => {
+      const id = getId(column, row)
+      squares.value.push({
+        id,
+        column,
+        row,
+        black: isEven(column + row),
+        selected: false,
+        piece: id === 'A2' ? 'pawn' : null
+      })
+    })
+  })
 }
-function startMove(square: Square): void {
-  const hasPiece = props.piece.square.id === square.id
-  if (step.value === 2) {
-    resetClick()
-  }
-  if (step.value === 0 && !hasPiece || step.value === 1 && hasPiece) {
+function getSquaresFromRow(row: number): Array<Square> {
+  const start = row * columns.length
+  const end = start + columns.length
+  return squares.value.slice(start, end)
+}
+function getId(column: number, row: number) {
+  const firstLetterIndex: number = 'a'.charCodeAt(0)
+  const letter: string = String.fromCharCode(firstLetterIndex + column).toUpperCase()
+  const number: number = row + 1
+  return letter + number
+}
+function resetSquaresSelected(): void {
+  squares.value = squares.value.map(square => ({...square, selected: false}))
+}
+function resetMove(): void {
+  squareFrom = null
+  squareTo = null
+}
+function makeMove():void {
+  if (!squareFrom || !squareTo) return
+  squareTo.piece = squareFrom.piece
+  squareFrom.piece = null
+  const index = props.lastMove ? props.lastMove.index + 1 : 0
+  const move: Move = { index, from: squareFrom.id, to: squareTo.id }
+  emits('make-move', move)
+  resetMove()
+}
+function clickSquare(id: string): void {
+  if (!squareFrom) resetSquaresSelected()
+  const square: Square | undefined = squares.value.find(square => square.id === id)
+  if (!square) {
+    resetMove()
+    resetSquaresSelected()
     return
   }
-  tentativeMove.value = [...tentativeMove.value, square]
-  if (step.value === 2) emits('make-move', tentativeMove.value)
+  if (square.piece && !squareFrom) {
+    squareFrom = square
+    squareFrom.selected = true
+    return
+  }
+  if (!square.piece && squareFrom) {
+    squareTo = square
+    squareTo.selected = true
+    makeMove()
+    return
+  }
+  resetMove()
+  resetSquaresSelected()
 }
 </script>
 
