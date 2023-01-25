@@ -2,42 +2,50 @@
   <div class="board">
     <div v-for="row in rows" :key="`row-${row}`" class="board__row">
       <Square
-        v-for="column in columns" :key="`column-${column}${row}`"
+        v-for="column in columns" :key="`square-${column}-${row}`"
+        ref="squares"
         :column="column" :row="row"
-        :square-click-events="squareClickEvents"
-        @click="clickSquare"
+        :tentative-move="tentativeMove"
+        :piece="piece"
+        @click="startMove"
       />
     </div>
   </div>
 </template>
 
 <script setup lang="ts">
-import type { SquareClickEvent } from '~~/types/Square';
+import type { Square, Piece } from '~~/types/Types';
 import type { Ref, ComputedRef } from 'vue'
+const props = defineProps<{
+  piece: Piece
+}>()
+const columns: Array<number> = getArray(8)
+const rows: Array<number> = getArray(8)
+const tentativeMove: Ref<Array<Square>> = ref([])
+const step: ComputedRef<number> = computed(() => tentativeMove.value.length)
 
-const squareClickEvents: Ref<Array<SquareClickEvent>> = ref([])
-const columns: ComputedRef<Array<number>> = computed(() => getArray(8))
-const rows: ComputedRef<Array<number>> = computed(() => getArray(8))
-
+const emits = defineEmits(['make-move'])
 function getArray(lenght: number): Array<number> {
   return [...Array(lenght).keys()]
 }
 function resetClick(): void {
-  squareClickEvents.value = []
+  tentativeMove.value = []
 }
-function makeMove(): void {
-  console.log(squareClickEvents.value.map(squareClickEvent => squareClickEvent.id))
-}
-function clickSquare(squareClickEvent: SquareClickEvent): void {
-  if (squareClickEvents.value.length === 2) resetClick()
-  squareClickEvents.value = [...squareClickEvents.value, squareClickEvent]
-  if (squareClickEvents.value.length === 2) makeMove()
+function startMove(square: Square): void {
+  const hasPiece = props.piece.square.id === square.id
+  if (step.value === 2) {
+    resetClick()
+  }
+  if (step.value === 0 && !hasPiece || step.value === 1 && hasPiece) {
+    return
+  }
+  tentativeMove.value = [...tentativeMove.value, square]
+  if (step.value === 2) emits('make-move', tentativeMove.value)
 }
 </script>
 
 <style lang="scss">
 .board {
-  margin: 50px;
   aspect-ratio: 1/1;
   display: flex;
   flex-direction: column-reverse;
