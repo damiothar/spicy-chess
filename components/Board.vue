@@ -2,7 +2,7 @@
   <div class="board">
     <div v-for="row in rows" :key="`row-${row}`" class="board__row">
       <Square
-        v-for="square in getSquaresFromRow(row)" :key="`square-${square.id}`"
+        v-for="square in getSquaresPerRow(row)" :key="`square-${square.id}`"
         :square="square" @click="clickSquare"
       />
     </div>
@@ -39,7 +39,7 @@ function getSquares(): Array<Square> {
     piece: 'pawn',
   })))).flat()
 }
-function getSquaresFromRow(row: number): Array<Square> {
+function getSquaresPerRow(row: number): Array<Square> {
   const start = row * columns.length
   const end = start + columns.length
   return squares.value.slice(start, end)
