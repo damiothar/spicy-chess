@@ -30,14 +30,19 @@ function getArray(lenght: number): Array<number> {
   return [...Array(lenght).keys()]
 }
 function getSquares(): Array<Square> {
-  return rows.map(row => (columns.map(column => ({
-    id: getId(column, row),
-    column,
-    row,
-    black: isEven(column + row),
-    selected: false,
-    piece: 'pawn',
-  })))).flat()
+  return rows.map(row => {
+    return columns.map(column => {
+      const id = getId(column, row)
+      return {
+        id,
+        column,
+        row,
+        black: isEven(column + row),
+        selected: false,
+        piece: id === 'A2' ? 'pawn' : null,
+      }
+    })
+  }).flat()
 }
 function getSquaresPerRow(row: number): Array<Square> {
   const start = row * columns.length
