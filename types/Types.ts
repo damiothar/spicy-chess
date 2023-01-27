@@ -4,7 +4,7 @@ export type Square = {
   row: number,
   black: boolean,
   selected: boolean,
-  piece: 'pawn' | 'rook' | 'knight' | 'bishop' | 'queen' | 'king' | null,
+  piece: string | null,
 }
 
 export type Move = {

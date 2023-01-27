@@ -1,7 +1,7 @@
 <template>
   <div class="app">
     <div class="app__main">
-      <Board :last-move="lastMove" @make-move="makeMove" />
+      <Board :last-move="lastMove" @save-move="saveMove" />
     </div>
     <div class="app__aside">
       <div v-for="move in moves" :key="move.index" class="move">
@@ -16,9 +16,9 @@ import type { Ref, ComputedRef } from 'vue'
 import type { Move } from '~~/types/Types'
 
 const moves: Ref<Array<Move>> = ref([])
-const lastMove: ComputedRef<Move | undefined> = computed(() => moves.value.at(-1))
+const lastMove: ComputedRef<Move | null> = computed(() => moves.value.at(-1) || null )
   
-function makeMove(move: Move): void {
+function saveMove(move: Move): void {
   moves.value.push(move)
 }
 </script>
